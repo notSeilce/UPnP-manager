@@ -4,7 +4,8 @@
 
 # Установка кодировки для корректного отображения русского языка
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-
+$Host.UI.RawUI.BackgroundColor = 'Black'
+$Host.UI.RawUI.ForegroundColor = 'White'
 # Путь к файлу с сохраненными портами
 $PORTS_FILE = "C:\Windows\System32\nazzy_ports.txt"
 
