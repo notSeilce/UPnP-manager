@@ -61,8 +61,8 @@ function Show-Menu {
     Write-Host "[ 1 ]" -ForegroundColor Green -NoNewline
     Write-Host " Использовать стандартные порты" -ForegroundColor White
     Write-Host "     ├─ 25565 TCP/UDP (Minecraft)" -ForegroundColor Gray
-    Write-Host "     ├─ 7656 UDP (ModularVoice)" -ForegroundColor Gray
-    Write-Host "     └─ 24454 UDP (SimpleVoice)" -ForegroundColor Gray
+    Write-Host "     ├─ 7656 TCP/UDP (ModularVoice)" -ForegroundColor Gray
+    Write-Host "     └─ 24454 TCP/UDP (SimpleVoice)" -ForegroundColor Gray
     Write-Host
     Write-Host "[ 2 ]" -ForegroundColor Green -NoNewline
     Write-Host " Настроить свои порты" -ForegroundColor White
@@ -130,7 +130,9 @@ function Set-DefaultPorts {
         @{Port="25565"; Protocol="tcp"; Description="Minecraft TCP"},
         @{Port="25565"; Protocol="udp"; Description="Minecraft UDP"},
         @{Port="7656"; Protocol="udp"; Description="ModularVoice UDP"},
-        @{Port="24454"; Protocol="udp"; Description="SimpleVoice UDP"}
+        @{Port="24454"; Protocol="udp"; Description="SimpleVoice UDP"},
+        @{Port="7656"; Protocol="tcp"; Description="ModularVoice TCP"},
+        @{Port="24454"; Protocol="tcp"; Description="SimpleVoice TCP"}
     )
 
     foreach ($p in $ports) {
