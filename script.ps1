@@ -18,8 +18,8 @@ if (-not (Test-Path $psProfileKey)) {
 
 Set-Location $psProfileKey
 $size = $host.UI.RawUI.WindowSize
-$size.Width = 90
-$size.Height = 30
+$size.Width = 100
+$size.Height = 25
 $host.UI.RawUI.WindowSize = $size
 # Установка шрифта Consolas 16
 New-ItemProperty -Path . -Name FaceName   -Value "Consolas"     -PropertyType String -Force
