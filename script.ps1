@@ -18,7 +18,7 @@ if (-not (Test-Path '.\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.e
 Set-Location '.\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe'
 
 # Устанавливаем параметры шрифта
-New-ItemProperty -Path . -Name FaceName -Value "Lucida Console" -PropertyType String -Force
+New-ItemProperty -Path . -Name FaceName -Value "Consolas" -PropertyType String -Force
 New-ItemProperty -Path . -Name FontFamily -Value 0x00000036 -PropertyType DWord -Force
 New-ItemProperty -Path . -Name FontSize -Value 0x000C0000 -PropertyType DWord -Force
 New-ItemProperty -Path . -Name FontWeight -Value 0x00000190 -PropertyType DWord -Force
