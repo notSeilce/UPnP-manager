@@ -12,27 +12,32 @@ if (-not $isAdmin) {
     Write-Warning "Требуются права администратора. Попытка перезапуска..."
 
     # Параметры для перезапуска
-    $powershellPath = $PSHOME + "\powershell.exe" # Путь к PowerShell
-    # Используем @() для ArgumentList, чтобы правильно обработать пути с пробелами
-    # -NoProfile: не загружать профиль PowerShell
-    # -ExecutionPolicy Bypass: обойти политику выполнения для этого запуска (если нужно)
-    # -File: указать файл скрипта для запуска
+    # --- ИЗМЕНЕНИЕ ---
+    # Просто указываем 'powershell.exe', система найдет его через PATH
+    # Это скорее всего запустит Windows PowerShell 5.1 для процесса с повышенными правами,
+    # но он сможет выполнить скрипт с помощью -File.
+    $powershellExe = "powershell.exe"
+    # --- КОНЕЦ ИЗМЕНЕНИЯ ---
+
+    # Аргументы остаются теми же: не загружать профиль, обойти политику, указать файл скрипта
     $processArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$PSCommandPath`"")
 
     try {
         # Запускаем новый процесс PowerShell с правами администратора
-        Start-Process -FilePath $powershellPath -ArgumentList $processArgs -Verb RunAs -ErrorAction Stop
+        # Используем измененное имя исполняемого файла
+        Start-Process -FilePath $powershellExe -ArgumentList $processArgs -Verb RunAs -ErrorAction Stop
     } catch {
-        Write-Error "Не удалось перезапустить скрипт от имени администратора. Ошибка: $($_.Exception.Message)"
-        # Дать пользователю время прочитать ошибку
+        # Улучшенное сообщение об ошибке, включающее путь к скрипту
+        Write-Error "Не удалось перезапустить скрипт '$PSCommandPath' от имени администратора. Ошибка: $($_.Exception.Message)"
         Read-Host "Нажмите Enter для выхода..."
-        exit 1 # Выход с кодом ошибки
+        exit 1
     }
 
     # Важно: Выходим из текущего (неадминистративного) экземпляра скрипта
     Write-Host "Закрытие текущего экземпляра..."
     exit 0 # Успешный выход, так как запущен новый процесс
 }
+
 
 # Установка кодировки для корректного отображения русского языка
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
