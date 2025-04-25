@@ -2,13 +2,6 @@
 # Требуются права администратора
 #Requires -RunAsAdministrator
 
-# Проверка прав администратора и запрос на их получение
-if (-not [System.Security.Principal.WindowsIdentity]::GetCurrent().IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "Запуск с правами администратора..." -ForegroundColor Yellow
-    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command & { $($myInvocation.MyCommand.Definition) }" -Verb RunAs
-    exit
-}
-
 # Установка кодировки для корректного отображения русского языка
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 # Установка стандартной темы консоли для PowerShell
@@ -44,7 +37,7 @@ Set-Location $env:USERPROFILE
 Clear-Host
 
 # Путь к файлу с сохраненными портами
-$PORTS_FILE = "C:\Windows\System32\nazzy_ports.txt"
+$PORTS_FILE = "$env:USERPROFILE\Documents\nazzy_ports.txt"
 
 # Функция для создания красивого заголовка
 function Show-Header {
@@ -193,41 +186,240 @@ function Set-CustomPorts {
             Write-Host "Нет настроенных портов" -ForegroundColor Yellow
         }
         
-        Write-Host "`nДоступные действия:" -ForegroundColor Cyan
-        Write-Host "[ 1 ] Добавить новый порт" -ForegroundColor White
-        Write-Host "[ 2 ] Удалить порт" -ForegroundColor White
-        Write-Host "[ 3 ] Вернуться в главное меню" -ForegroundColor White
+        Write-Host "`nДоступные действия:" -ForegroundColor White
+        Write-Host "[ 1 ]" -ForegroundColor Green -NoNewline
+        Write-Host " Добавить порт" -ForegroundColor White
+        Write-Host "[ 2 ]" -ForegroundColor Green -NoNewline
+        Write-Host " Применить настройки" -ForegroundColor White
+        Write-Host "[ 3 ]" -ForegroundColor Yellow -NoNewline
+        Write-Host " Удалить порт" -ForegroundColor White
+        Write-Host "[ 4 ]" -ForegroundColor Red -NoNewline
+        Write-Host " Вернуться в главное меню" -ForegroundColor White
+        Write-Host
         
-        $option = Read-Host "Выберите действие"
+        $choice = Read-Host "Выберите действие (1-4)"
         
-        if ($option -eq 1) {
-            $port = Read-Host "Введите номер порта"
-            $protocol = Read-Host "Введите протокол (tcp/udp)"
-            $description = Read-Host "Введите описание"
-            
-            $newPort = @{Port=$port; Protocol=$protocol; Description=$description}
-            $currentPorts += $newPort
-            $currentPorts | ConvertTo-Json | Set-Content $PORTS_FILE
-        } elseif ($option -eq 2) {
-            $port = Read-Host "Введите номер порта для удаления"
-            $currentPorts = $currentPorts | Where-Object { $_.Port -ne $port }
-            $currentPorts | ConvertTo-Json | Set-Content $PORTS_FILE
+        switch ($choice) {
+            "1" { 
+                Add-CustomPort -currentPorts $currentPorts
+            }
+            "2" { 
+                if ($currentPorts.Count -gt 0) {
+                    Apply-CustomPorts -ports $currentPorts
+                } else {
+                    Write-Host "Нет портов для применения!" -ForegroundColor Red
+                    Start-Sleep -Seconds 2
+                }
+            }
+            "3" {
+                if ($currentPorts.Count -gt 0) {
+                    Remove-CustomPort -currentPorts $currentPorts
+                } else {
+                    Write-Host "Нет портов для удаления!" -ForegroundColor Red
+                    Start-Sleep -Seconds 2
+                }
+            }
+            "4" { return }
+            default {
+                Write-Host "Неверный выбор!" -ForegroundColor Red
+                Start-Sleep -Seconds 1
+            }
         }
-    } while ($option -ne 3)
+    } while ($true)
 }
 
-# Запуск меню
-do {
-    Show-Menu
-    $choice = Read-Host "Выберите действие"
+# Функция для добавления пользовательского порта
+function Add-CustomPort {
+    param (
+        [array]$currentPorts
+    )
     
-    switch ($choice) {
-        1 { Set-DefaultPorts }
-        2 { Set-CustomPorts }
-        3 { & upnpc-static -l }
-        4 { & upnpc-static -L }
-        5 { & upnpc-static -d 25565 udp; & upnpc-static -d 25565 tcp }
-        6 { exit }
-        default { Write-Host "Неверный выбор, попробуйте снова." -ForegroundColor Red }
+    do {
+        $port = Read-Host "`nВведите номер порта (1-65535)"
+        if ($port -match '^\d+$' -and [int]$port -ge 1 -and [int]$port -le 65535) {
+            break
+        }
+        Write-Host "Неверный номер порта!" -ForegroundColor Red
+    } while ($true)
+    
+    Write-Host "`nВыберите протокол:"
+    Write-Host "[ 1 ]" -ForegroundColor Cyan -NoNewline
+    Write-Host " TCP" -ForegroundColor White
+    Write-Host "[ 2 ]" -ForegroundColor Cyan -NoNewline
+    Write-Host " UDP" -ForegroundColor White
+    Write-Host "[ 3 ]" -ForegroundColor Cyan -NoNewline
+    Write-Host " TCP и UDP" -ForegroundColor White
+    
+    do {
+        $protChoice = Read-Host "Ваш выбор (1-3)"
+        if ($protChoice -match '^[1-3]$') {
+            break
+        }
+        Write-Host "Неверный выбор!" -ForegroundColor Red
+    } while ($true)
+    
+    $description = Read-Host "`nВведите описание правила"
+    
+    switch ($protChoice) {
+        "1" { 
+            $currentPorts += @{Port=$port; Protocol="tcp"; Description=$description}
+        }
+        "2" { 
+            $currentPorts += @{Port=$port; Protocol="udp"; Description=$description}
+        }
+        "3" { 
+            $currentPorts += @{Port=$port; Protocol="tcp"; Description="$description (TCP)"}
+            $currentPorts += @{Port=$port; Protocol="udp"; Description="$description (UDP)"}
+        }
     }
-} while ($choice -ne 6)
+    
+    $currentPorts | ConvertTo-Json | Set-Content $PORTS_FILE
+    Write-Host "`nПорт успешно добавлен!" -ForegroundColor Green
+    Start-Sleep -Seconds 1
+}
+
+# Функция для применения пользовательских портов
+function Apply-CustomPorts {
+    param (
+        [array]$ports
+    )
+    
+    Write-Host "`nПрименение настроек портов..." -ForegroundColor Cyan
+    
+    foreach ($p in $ports) {
+        Write-Host "Настройка порта $($p.Port) $($p.Protocol)..." -ForegroundColor Yellow
+        & upnpc-static -e $p.Description -d $p.Port $p.Protocol
+        & upnpc-static -e $p.Description -a "`@" $p.Port $p.Port $p.Protocol
+    }
+    
+    Write-Host "`nТекущие правила:" -ForegroundColor Green
+    & upnpc-static -l
+    pause
+}
+
+# Функция для удаления пользовательского порта
+function Remove-CustomPort {
+    param (
+        [array]$currentPorts
+    )
+
+    Clear-Host
+    Show-Header "Удаление пользовательских портов"
+
+    if ($currentPorts.Count -gt 0) {
+        Write-Host "Доступные порты для удаления:" -ForegroundColor Cyan
+        for ($i = 0; $i -lt $currentPorts.Count; $i++) {
+            Write-Host ("  ├─ {0}. {1} {2} - {3}" -f ($i+1), $currentPorts[$i].Port, 
+                $currentPorts[$i].Protocol.ToUpper(), $currentPorts[$i].Description) -ForegroundColor Gray
+        }
+
+    } else {
+        Write-Host "Нет настроенных портов" -ForegroundColor Yellow
+        Start-Sleep -Seconds 2
+        return
+    }
+
+    Write-Host ""
+    Write-Host "`nДоступные действия:" -ForegroundColor White
+    Write-Host "[ 0 ]" -ForegroundColor Red -NoNewline
+    Write-Host " Отмена" -ForegroundColor White
+    Write-Host ""
+    $selection = Read-Host "Выберите порт для удаления (0-$($currentPorts.Count))"
+
+    if ($selection -eq "0") { 
+        return 
+    } elseif ($selection -match '^\d+$' -and [int]$selection -ge 1 -and [int]$selection -le $currentPorts.Count) {
+        $index = [int]$selection - 1
+        $port = $currentPorts[$index]
+
+        Write-Host "`nВы уверены, что хотите удалить порт $($port.Port) $($port.Protocol)?" -ForegroundColor Yellow
+        $confirmation = Read-Host "Подтвердите (y/n)"
+
+        if ($confirmation -eq 'y') {
+            # Удаление правила из UPnP
+            Write-Host "Удаление правила из UPnP: $($port.Port) $($port.Protocol)" -ForegroundColor DarkGray
+            & upnpc-static -e $port.Description -d $port.Port $port.Protocol
+
+            # Удаление порта из массива
+            $newPorts = @($currentPorts | Where-Object { 
+                -not (($_.Port -eq $port.Port) -and ($_.Protocol -eq $port.Protocol) -and ($_.Description -eq $port.Description))
+            })
+
+            # Сохраняем обновленные порты
+            if ($newPorts.Count -gt 0) {
+                $newPorts | ConvertTo-Json | Set-Content $PORTS_FILE
+            } else {
+                if (Test-Path $PORTS_FILE) { Remove-Item $PORTS_FILE -Force }
+            }
+
+            Write-Host "`nПорт и правило успешно удалены!" -ForegroundColor Green
+            Start-Sleep -Seconds 1
+        }
+    } else {
+        Write-Host "Неверный выбор!" -ForegroundColor Red
+        Start-Sleep -Seconds 1
+    }
+}
+
+# Обновляем функцию удаления всех правил
+function Remove-AllRules {
+    Write-Host "`nУдаление всех правил..." -ForegroundColor Yellow
+    
+    # Удаление стандартных портов
+    $defaultPorts = @(
+        @{Port="25565"; Protocol="tcp"; Desc="Minecraft TCP"},
+        @{Port="25565"; Protocol="udp"; Desc="Minecraft UDP"},
+        @{Port="7656"; Protocol="udp"; Desc="ModularVoice UDP"},
+        @{Port="24454"; Protocol="udp"; Desc="SimpleVoice UDP"}
+    )
+    
+    foreach ($p in $defaultPorts) {
+        & upnpc-static -e $p.Desc -d $p.Port $p.Protocol
+    }
+    
+    # Удаление пользовательских портов
+    if (Test-Path $PORTS_FILE) {
+        $customPorts = Get-Content $PORTS_FILE | ConvertFrom-Json -ErrorAction SilentlyContinue
+        foreach ($p in $customPorts) {
+            & upnpc-static -e $p.Description -d $p.Port $p.Protocol
+        }
+        Remove-Item $PORTS_FILE -Force
+    }
+    
+    Write-Host "Все правила были удалены!" -ForegroundColor Green
+    pause
+}
+
+# Основной цикл программы
+function Start-MainLoop {
+    Test-Upnpc
+    
+    do {
+        Show-Menu
+        $choice = Read-Host "Выберите действие (1-6)"
+        
+        switch ($choice) {
+            "1" { Set-DefaultPorts }
+            "2" { Set-CustomPorts }
+            "3" { 
+                Write-Host "`nПроверка статуса подключения..." -ForegroundColor Yellow
+                & upnpc-static -s
+                pause
+            }
+            "4" {
+                Write-Host "`nТекущие правила:" -ForegroundColor Green
+                & upnpc-static -l
+                pause
+            }
+            "5" { Remove-AllRules }
+            "6" { return }
+            default { 
+                Write-Host "Неверный выбор!" -ForegroundColor Red
+                Start-Sleep -Seconds 1
+            }
+        }
+    } while ($true)
+}
+
+# Запуск программы
+Start-MainLoop 
