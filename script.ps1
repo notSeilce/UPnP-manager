@@ -4,15 +4,11 @@
 
 # Установка кодировки для корректного отображения русского языка
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$Host.UI.RawUI.BackgroundColor = 'Black'
-$Host.UI.RawUI.ForegroundColor = 'White'
+(Get-Host).UI.RawUI.ForegroundColor="White";
+(Get-Host).UI.RawUI.backgroundColor="Black";
+(Get-Host).UI.RawUI.CursorSize=10;
+(Get-Host).UI.RawUI.WindowTitle="miniUPnP Manager by Seilce";
 
-# Перерисовываем экран
-$RawUI = $Host.UI.RawUI
-$NewBuffer = $RawUI.NewBufferCellArray($RawUI.WindowSize.Height, $RawUI.WindowSize.Width, ' ', $RawUI.ForegroundColor, $RawUI.BackgroundColor)
-$RawUI.SetBufferContents($RawUI.CursorPosition, $NewBuffer)
-
-Clear-Host
 # Путь к файлу с сохраненными портами
 $PORTS_FILE = "C:\Windows\System32\nazzy_ports.txt"
 
