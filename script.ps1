@@ -2,42 +2,6 @@
 # Требуются права администратора
 #Requires -RunAsAdministrator
 # Получаем текущую идентификацию пользователя
-$currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-
-# Проверяем, входит ли пользователь в группу Администраторов
-$isAdmin = $currentUser.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-
-# Если не администратор
-if (-not $isAdmin) {
-    Write-Warning "Требуются права администратора. Попытка перезапуска..."
-
-    # Параметры для перезапуска
-    # --- ИЗМЕНЕНИЕ ---
-    # Просто указываем 'powershell.exe', система найдет его через PATH
-    # Это скорее всего запустит Windows PowerShell 5.1 для процесса с повышенными правами,
-    # но он сможет выполнить скрипт с помощью -File.
-    $powershellExe = "powershell.exe"
-    # --- КОНЕЦ ИЗМЕНЕНИЯ ---
-
-    # Аргументы остаются теми же: не загружать профиль, обойти политику, указать файл скрипта
-    $processArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$PSCommandPath`"")
-
-    try {
-        # Запускаем новый процесс PowerShell с правами администратора
-        # Используем измененное имя исполняемого файла
-        Start-Process -FilePath $powershellExe -ArgumentList $processArgs -Verb RunAs -ErrorAction Stop
-    } catch {
-        # Улучшенное сообщение об ошибке, включающее путь к скрипту
-        Write-Error "Не удалось перезапустить скрипт '$PSCommandPath' от имени администратора. Ошибка: $($_.Exception.Message)"
-        Read-Host "Нажмите Enter для выхода..."
-        exit 1
-    }
-
-    # Важно: Выходим из текущего (неадминистративного) экземпляра скрипта
-    Write-Host "Закрытие текущего экземпляра..."
-    exit 0 # Успешный выход, так как запущен новый процесс
-}
-
 
 # Установка кодировки для корректного отображения русского языка
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
