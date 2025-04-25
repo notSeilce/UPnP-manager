@@ -6,22 +6,22 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 # Установка стандартной темы консоли для PowerShell
 
-# Переключаемся на раздел реестра
+# Переход в нужный раздел реестра
 Set-Location HKCU:\Console
 
-# Создаём профиль для powershell.exe (если нет)
-if (-not (Test-Path '.\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe')) {
-    New-Item '.\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe' | Out-Null
+# Создание раздела профиля для powershell.exe
+$psProfileKey = '.\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe'
+if (-not (Test-Path $psProfileKey)) {
+    New-Item $psProfileKey | Out-Null
 }
 
-# Переходим в профиль powershell.exe
-Set-Location '.\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe'
+Set-Location $psProfileKey
 
-# Устанавливаем параметры шрифта
-New-ItemProperty -Path . -Name FaceName -Value "Consolas" -PropertyType String -Force
-New-ItemProperty -Path . -Name FontFamily -Value 0x00000036 -PropertyType DWord -Force
-New-ItemProperty -Path . -Name FontSize -Value 0x000C0000 -PropertyType DWord -Force
-New-ItemProperty -Path . -Name FontWeight -Value 0x00000190 -PropertyType DWord -Force
+# Установка шрифта Consolas 16
+New-ItemProperty -Path . -Name FaceName   -Value "Consolas"     -PropertyType String -Force
+New-ItemProperty -Path . -Name FontFamily -Value 0x00000036     -PropertyType DWord  -Force
+New-ItemProperty -Path . -Name FontSize   -Value 0x00100000     -PropertyType DWord  -Force  # 0x0010 = 16 dec
+New-ItemProperty -Path . -Name FontWeight -Value 0x00000190     -PropertyType DWord  -Force  # 400 = normal
 
 # Возвращаемся обратно
 Set-Location $env:USERPROFILE
