@@ -1,18 +1,5 @@
 # miniUPnP Manager by Seilce
 # Требуются права администратора
-if (-not (Test-Administrator)) {
-    Write-Host "Пожалуйста, запустите PowerShell от имени администратора."
-    Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
-    exit
-}
-
-# Функция для проверки прав администратора
-function Test-Administrator {
-    $currentIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-    $currentPrincipal = New-Object System.Security.Principal.WindowsPrincipal($currentIdentity)
-    return $currentPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
-}
-
 
 # Установка кодировки для корректного отображения русского языка
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
