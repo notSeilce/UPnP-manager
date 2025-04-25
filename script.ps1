@@ -1,5 +1,6 @@
 # miniUPnP Manager by Seilce
 # Требуются права администратора
+#Requires -RunAsAdministrator
 
 # Установка кодировки для корректного отображения русского языка
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
