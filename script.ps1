@@ -1,6 +1,38 @@
 # miniUPnP Manager by Seilce
 # Требуются права администратора
 #Requires -RunAsAdministrator
+# Получаем текущую идентификацию пользователя
+$currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+
+# Проверяем, входит ли пользователь в группу Администраторов
+$isAdmin = $currentUser.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+# Если не администратор
+if (-not $isAdmin) {
+    Write-Warning "Требуются права администратора. Попытка перезапуска..."
+
+    # Параметры для перезапуска
+    $powershellPath = $PSHOME + "\powershell.exe" # Путь к PowerShell
+    # Используем @() для ArgumentList, чтобы правильно обработать пути с пробелами
+    # -NoProfile: не загружать профиль PowerShell
+    # -ExecutionPolicy Bypass: обойти политику выполнения для этого запуска (если нужно)
+    # -File: указать файл скрипта для запуска
+    $processArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "`"$PSCommandPath`"")
+
+    try {
+        # Запускаем новый процесс PowerShell с правами администратора
+        Start-Process -FilePath $powershellPath -ArgumentList $processArgs -Verb RunAs -ErrorAction Stop
+    } catch {
+        Write-Error "Не удалось перезапустить скрипт от имени администратора. Ошибка: $($_.Exception.Message)"
+        # Дать пользователю время прочитать ошибку
+        Read-Host "Нажмите Enter для выхода..."
+        exit 1 # Выход с кодом ошибки
+    }
+
+    # Важно: Выходим из текущего (неадминистративного) экземпляра скрипта
+    Write-Host "Закрытие текущего экземпляра..."
+    exit 0 # Успешный выход, так как запущен новый процесс
+}
 
 # Установка кодировки для корректного отображения русского языка
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
