@@ -69,7 +69,7 @@ Set-Location $env:USERPROFILE
 Clear-Host
 
 # Путь к файлу с сохраненными портами
-$PORTS_FILE = "C:\Program Files\nazzy_ports.txt"
+$PORTS_FILE = "C:\Users\Seilce\nazzy_ports.txt"
 
 # Функция для создания красивого заголовка
 function Show-Header {
