@@ -16,7 +16,9 @@ if (-not (Test-Path $psProfileKey)) {
 }
 
 Set-Location $psProfileKey
-
+[console]::WindowWidth=120; 
+[console]::WindowHeight=30; 
+[console]::BufferWidth=[console]::WindowWidth
 # Установка шрифта Consolas 16
 New-ItemProperty -Path . -Name FaceName   -Value "Consolas"     -PropertyType String -Force
 New-ItemProperty -Path . -Name FontFamily -Value 0x00000036     -PropertyType DWord  -Force
