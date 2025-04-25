@@ -2,6 +2,12 @@
 # Требуются права администратора
 #Requires -RunAsAdministrator
 
+ if (-not [System.Security.Principal.WindowsIdentity]::GetCurrent().IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
+     Write-Host "Запуск с правами администратора..." -ForegroundColor Yellow
+     Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command & { $($myInvocation.MyCommand.Definition) }" -Verb RunAs
+     exit
+ }
+ 
 # Установка кодировки для корректного отображения русского языка
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 # Установка стандартной темы консоли для PowerShell
