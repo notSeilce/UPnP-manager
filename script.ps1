@@ -2,8 +2,6 @@
 # Требуются права администратора
 #Requires -RunAsAdministrator
 
-Start-Process PowerShell  -Verb  runAs 
-
 # Установка кодировки для корректного отображения русского языка
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 # Установка стандартной темы консоли для PowerShell
