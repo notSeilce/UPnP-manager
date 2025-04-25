@@ -22,7 +22,7 @@ New-ItemProperty -Path . -Name FaceName   -Value "Consolas"     -PropertyType St
 New-ItemProperty -Path . -Name FontFamily -Value 0x00000036     -PropertyType DWord  -Force
 New-ItemProperty -Path . -Name FontSize   -Value 0x00100000     -PropertyType DWord  -Force  # 0x0010 = 16 dec
 New-ItemProperty -Path . -Name FontWeight -Value 0x00000190     -PropertyType DWord  -Force  # 400 = normal
-
+Set-ConsoleFont 16
 # Возвращаемся обратно
 Set-Location $env:USERPROFILE
 
