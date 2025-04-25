@@ -4,10 +4,34 @@
 
 # Установка кодировки для корректного отображения русского языка
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-(Get-Host).UI.RawUI.ForegroundColor="White";
-(Get-Host).UI.RawUI.backgroundColor="Black";
-(Get-Host).UI.RawUI.CursorSize=10;
-(Get-Host).UI.RawUI.WindowTitle="miniUPnP Manager by Seilce";
+# Установка стандартной темы консоли для PowerShell
+
+# Переключаемся на раздел реестра
+Set-Location HKCU:\Console
+
+# Создаём профиль для powershell.exe (если нет)
+if (-not (Test-Path '.\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe')) {
+    New-Item '.\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe' | Out-Null
+}
+
+# Переходим в профиль powershell.exe
+Set-Location '.\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe'
+
+# Устанавливаем параметры шрифта
+New-ItemProperty -Path . -Name FaceName -Value "Lucida Console" -PropertyType String -Force
+New-ItemProperty -Path . -Name FontFamily -Value 0x00000036 -PropertyType DWord -Force
+New-ItemProperty -Path . -Name FontSize -Value 0x000C0000 -PropertyType DWord -Force
+New-ItemProperty -Path . -Name FontWeight -Value 0x00000190 -PropertyType DWord -Force
+
+# Возвращаемся обратно
+Set-Location $env:USERPROFILE
+
+# Устанавливаем визуальные параметры консоли
+(Get-Host).UI.RawUI.ForegroundColor = "White"
+(Get-Host).UI.RawUI.BackgroundColor = "Black"
+(Get-Host).UI.RawUI.CursorSize = 10
+(Get-Host).UI.RawUI.WindowTitle = "miniUPnP Manager by Seilce"
+Clear-Host
 
 # Путь к файлу с сохраненными портами
 $PORTS_FILE = "C:\Windows\System32\nazzy_ports.txt"
