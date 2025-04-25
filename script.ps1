@@ -16,9 +16,28 @@ if (-not (Test-Path $psProfileKey)) {
 }
 
 Set-Location $psProfileKey
-[console]::WindowWidth=120; 
-[console]::WindowHeight=30; 
-[console]::BufferWidth=[console]::WindowWidth
+function Set-ConsoleWindow {
+    param(
+        [int]$Width,
+        [int]$Height
+    )
+
+    $WindowSize = $Host.UI.RawUI.WindowSize
+    $WindowSize.Width  = [Math]::Min($Width, $Host.UI.RawUI.BufferSize.Width)
+    $WindowSize.Height = $Height
+
+    try {
+        $Host.UI.RawUI.WindowSize = $WindowSize
+    }
+    catch [System.Management.Automation.SetValueInvocationException] {
+        $Maxvalue = ($_.Exception.Message | Select-String "\d+").Matches[0].Value
+        $WindowSize.Height = $Maxvalue
+        $Host.UI.RawUI.WindowSize = $WindowSize
+    }
+}
+
+# Set the window size to 120 x 30
+Set-ConsoleWindow -Width 120 -Height 30
 # Установка шрифта Consolas 16
 New-ItemProperty -Path . -Name FaceName   -Value "Consolas"     -PropertyType String -Force
 New-ItemProperty -Path . -Name FontFamily -Value 0x00000036     -PropertyType DWord  -Force
