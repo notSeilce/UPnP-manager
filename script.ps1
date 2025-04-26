@@ -44,7 +44,7 @@ $upnpcPath = Join-Path $env:USERPROFILE "UPnP\upnpc-static.exe"
 $upnpfolder = Join-Path $env:USERPROFILE "UPnP\"
 $upnpfoldercreate = $env:USERPROFILE
 function CreateFolder {
-    if (-not (Test-Path $upnpcPath)) {
+    if (-not (Test-Path $upnpfolder)) {
         cd "$upnpfoldercreate"
         mkdir "UPnP"
     }
@@ -113,7 +113,7 @@ function Install-Upnpc {
         Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
         
         # Копирование файлов
-        Write-Host "Копирование файлов в System32..." -ForegroundColor Cyan
+        Write-Host "Копирование файлов в $upnpfolder..." -ForegroundColor Cyan
         Copy-Item "$extractPath\upnpc-static.exe" "$upnpfolder" -Force
         Copy-Item "$extractPath\upnpc-shared.exe" "$upnpfolder" -Force
         Copy-Item "$extractPath\miniupnpc.dll" "$upnpfolder" -Force
