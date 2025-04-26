@@ -43,9 +43,12 @@ $PORTS_FILE = Join-Path $env:USERPROFILE "UPnP\nazzy_ports.txt"
 $upnpcPath = Join-Path $env:USERPROFILE "UPnP\upnpc-static.exe"
 $upnpfolder = Join-Path $env:USERPROFILE "UPnP\"
 $upnpfoldercreate = $env:USERPROFILE
-cd "$upnpfoldercreate"
-mkdir "UPnP"
-
+function CreateFolder {
+    if (-not (Test-Path $upnpcPath)) {
+        cd "$upnpfoldercreate"
+        mkdir "UPnP"
+    }
+}
 
 # Функция для создания красивого заголовка
 function Show-Header {
