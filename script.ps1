@@ -38,7 +38,14 @@ Set-Location $env:USERPROFILE
 Clear-Host
 
 # Путь к файлу с сохраненными портами
-$PORTS_FILE = "C:\Users\Seilce\nazzy_ports.txt"
+
+$PORTS_FILE = Join-Path $env:USERPROFILE "UPnP\nazzy_ports.txt"
+$upnpcPath = Join-Path $env:USERPROFILE "UPnP\upnpc-static.exe"
+$upnpfolder = Join-Path $env:USERPROFILE "UPnP\"
+$upnpfoldercreate = $env:USERPROFILE
+cd "$upnpfoldercreate"
+mkdir "UPnP"
+
 
 # Функция для создания красивого заголовка
 function Show-Header {
@@ -80,7 +87,6 @@ function Show-Menu {
 
 # Функция для проверки наличия upnpc
 function Test-Upnpc {
-    $upnpcPath = "C:\Windows\System32\upnpc-static.exe"
     if (-not (Test-Path $upnpcPath)) {
         Write-Host "upnpc не установлен. Начинаем установку..." -ForegroundColor Yellow
         Install-Upnpc
@@ -105,9 +111,9 @@ function Install-Upnpc {
         
         # Копирование файлов
         Write-Host "Копирование файлов в System32..." -ForegroundColor Cyan
-        Copy-Item "$extractPath\upnpc-static.exe" "C:\Windows\System32\" -Force
-        Copy-Item "$extractPath\upnpc-shared.exe" "C:\Windows\System32\" -Force
-        Copy-Item "$extractPath\miniupnpc.dll" "C:\Windows\System32\" -Force
+        Copy-Item "$extractPath\upnpc-static.exe" "$upnpfolder" -Force
+        Copy-Item "$extractPath\upnpc-shared.exe" "$upnpfolder" -Force
+        Copy-Item "$extractPath\miniupnpc.dll" "$upnpfolder" -Force
         
         # Очистка
         Remove-Item $zipPath -Force
@@ -138,8 +144,8 @@ function Set-DefaultPorts {
 
     foreach ($p in $ports) {
         Write-Host "Настройка порта $($p.Port) $($p.Protocol)..." -ForegroundColor Yellow
-        & upnpc-static -e $p.Description -d $p.Port $p.Protocol
-        & upnpc-static -e $p.Description -a "`@" $p.Port $p.Port $p.Protocol
+        & $upnpcPath -e $p.Description -d $p.Port $p.Protocol
+        & $upnpcPath -e $p.Description -a "`@" $p.Port $p.Port $p.Protocol
     }
 
     # Добавление стандартных портов в файл настроек
@@ -164,7 +170,7 @@ function Set-DefaultPorts {
     $existingPorts | ConvertTo-Json | Set-Content $PORTS_FILE
 
     Write-Host "`nТекущие правила:" -ForegroundColor Green
-    & upnpc-static -l
+    & $upnpcPath -l
     pause
 }
 
@@ -291,12 +297,12 @@ function Apply-CustomPorts {
     
     foreach ($p in $ports) {
         Write-Host "Настройка порта $($p.Port) $($p.Protocol)..." -ForegroundColor Yellow
-        & upnpc-static -e $p.Description -d $p.Port $p.Protocol
-        & upnpc-static -e $p.Description -a "`@" $p.Port $p.Port $p.Protocol
+        & $upnpcPath -e $p.Description -d $p.Port $p.Protocol
+        & $upnpcPath -e $p.Description -a "`@" $p.Port $p.Port $p.Protocol
     }
     
     Write-Host "`nТекущие правила:" -ForegroundColor Green
-    & upnpc-static -l
+    & $upnpcPath -l
     pause
 }
 
@@ -341,7 +347,7 @@ function Remove-CustomPort {
         if ($confirmation -eq 'y') {
             # Удаление правила из UPnP
             Write-Host "Удаление правила из UPnP: $($port.Port) $($port.Protocol)" -ForegroundColor DarkGray
-            & upnpc-static -e $port.Description -d $port.Port $port.Protocol
+            & $upnpcPath -e $port.Description -d $port.Port $port.Protocol
 
             # Удаление порта из массива
             $newPorts = @($currentPorts | Where-Object { 
@@ -377,14 +383,14 @@ function Remove-AllRules {
     )
     
     foreach ($p in $defaultPorts) {
-        & upnpc-static -e $p.Desc -d $p.Port $p.Protocol
+        & $upnpcPath -e $p.Desc -d $p.Port $p.Protocol
     }
     
     # Удаление пользовательских портов
     if (Test-Path $PORTS_FILE) {
         $customPorts = Get-Content $PORTS_FILE | ConvertFrom-Json -ErrorAction SilentlyContinue
         foreach ($p in $customPorts) {
-            & upnpc-static -e $p.Description -d $p.Port $p.Protocol
+            & $upnpcPath -e $p.Description -d $p.Port $p.Protocol
         }
         Remove-Item $PORTS_FILE -Force
     }
@@ -406,12 +412,12 @@ function Start-MainLoop {
             "2" { Set-CustomPorts }
             "3" { 
                 Write-Host "`nПроверка статуса подключения..." -ForegroundColor Yellow
-                & upnpc-static -s
+                & $upnpcPath -s
                 pause
             }
             "4" {
                 Write-Host "`nТекущие правила:" -ForegroundColor Green
-                & upnpc-static -l
+                & $upnpcPath -l
                 pause
             }
             "5" { Remove-AllRules }
