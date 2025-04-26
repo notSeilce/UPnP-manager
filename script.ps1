@@ -43,6 +43,7 @@ $PORTS_FILE = Join-Path $env:USERPROFILE "UPnP\nazzy_ports.txt"
 $upnpcPath = Join-Path $env:USERPROFILE "UPnP\upnpc-static.exe"
 $upnpfolder = Join-Path $env:USERPROFILE "UPnP\"
 $upnpfoldercreate = $env:USERPROFILE
+CreateFolder
 function CreateFolder {
     if (-not (Test-Path $upnpfolder)) {
         New-Item -Path $upnpfolder -ItemType Directory | Out-Null
@@ -116,7 +117,7 @@ function Install-Upnpc {
         Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
         
         # Копирование файлов
-        Write-Host "Копирование файлов в System32..." -ForegroundColor Cyan
+        Write-Host "Копирование файлов в $upnpfolder..." -ForegroundColor Cyan
         Copy-Item "$extractPath\upnpc-static.exe" "$upnpfolder" -Force
         Copy-Item "$extractPath\upnpc-shared.exe" "$upnpfolder" -Force
         Copy-Item "$extractPath\miniupnpc.dll" "$upnpfolder" -Force
